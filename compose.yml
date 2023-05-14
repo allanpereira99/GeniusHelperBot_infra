@@ -1,0 +1,39 @@
+version: "3.7"
+secrets:
+  telegram_token:
+    external: true
+  openai_token:
+    external: true
+services:
+  bot:
+    image: allansouzadk/genius_helper_bot:1.0.0
+    environment:
+      - TELEGRAM_API_KEY=/run/secrets/telegram_token
+      - OPENAI_API_KEY=/run/secrets/openai_token
+    secrets:
+      - telegram_token
+      - openai_token
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - 80:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+networks:
+  backend:
